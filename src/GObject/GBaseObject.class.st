@@ -58,7 +58,7 @@ GBaseObject >> = other [
 { #category : #'external resource management' }
 GBaseObject >> autoRelease [
 
-	self engine resourceManager addResource: self
+	GExternalResourceManager uniqueInstance addResource: self
 ]
 
 { #category : #accessing }
