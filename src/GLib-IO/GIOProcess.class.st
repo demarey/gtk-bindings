@@ -75,6 +75,16 @@ GIOProcess class >> gSpawnAsync: working_directory command: command arguments: a
 			argv freeArrayOfStrings ]
 ]
 
+{ #category : #private }
+GIOProcess class >> gSpawnCheckWaitStatus: waitStatus error: error [
+	" see https://docs.gtk.org/glib/func.spawn_check_wait_status.html
+	gboolean g_spawn_check_wait_status (gint wait_status, GError** error) "
+
+	self ffiCall: #(gboolean g_spawn_check_wait_status (
+		const gint wait_status,
+		"GError **"gpointerHolder error))
+]
+
 { #category : #'instance creation' }
 GIOProcess class >> spawn: command [
 
