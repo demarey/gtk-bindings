@@ -133,7 +133,7 @@ GIOChannel >> readLine [
 	((status = G_IO_STATUS_ERROR) and: [ error isError ]) 
 		ifTrue: [ self error: error messageString ].
 
-	^ buf readStringUTF8
+	^ buf readString
 ]
 
 { #category : #'private - primitives' }
@@ -146,6 +146,12 @@ GIOChannel >> readLine: str_return size: length terminator: terminator_pos error
 		  "gsize *"void *length,
 		  "gsize *"void *terminator_pos,
 		  "GError **" GError *error))
+]
+
+{ #category : #accessing }
+GIOChannel >> readLineUtf8 [
+
+	^ self readLine utf8Decoded
 ]
 
 { #category : #accessing }
