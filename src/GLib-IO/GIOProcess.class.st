@@ -138,6 +138,8 @@ GIOProcess >> pid [
 
 { #category : #accessing }
 GIOProcess >> watch: aBlock [ 
+	"Add a child watch block which will be called when the child process exits.
+	GLib supports only a single callback per process id."
 	| callback |
 
 	callback := GCallback 
