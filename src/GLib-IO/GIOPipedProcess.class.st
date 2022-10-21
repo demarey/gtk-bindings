@@ -20,7 +20,7 @@ GIOPipedProcess class >> gSpawnAsyncWithPipes: working_directory argv: argv envp
 	stdinFdOut := FFIInt32 newBuffer.
 	stdoutFdOut := FFIInt32 newBuffer.
 	stderrFdOut := FFIInt32 newBuffer.
-	error := GError new.
+	error := gpointerHolder new.
 	
 	result := self 
 		gSpawnAsyncWithPipes: working_directory 
@@ -60,7 +60,7 @@ GIOPipedProcess class >> gSpawnAsyncWithPipes: working_directory argv: argv envp
 		"gint *"void *stdin_pipe_out,
 		"gint *"void *stdout_pipe_out,
 		"gint *"void *stderr_pipe_out,
-		"GError **"GError *error))
+		"GError **"gpointerHolder error))
 ]
 
 { #category : #private }
@@ -86,6 +86,18 @@ GIOPipedProcess class >> spawn: command arguments: anArray flags: flags [
 
 	^ self 
 		gSpawnAsyncWithPipes: nil "working directory" 
+		command: command 
+		arguments: anArray 
+		flags: flags 
+		childSetup: ExternalAddress null 
+		data: ExternalAddress null
+]
+
+{ #category : #'instance creation' }
+GIOPipedProcess class >> spawn: command arguments: anArray workingDirectory: workingdirectory flags: flags [
+
+	^ self 
+		gSpawnAsyncWithPipes: workingdirectory
 		command: command 
 		arguments: anArray 
 		flags: flags 
