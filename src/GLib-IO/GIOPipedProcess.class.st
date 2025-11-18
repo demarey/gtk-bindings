@@ -95,19 +95,7 @@ GIOPipedProcess class >> spawn: command arguments: anArray workingDirectory: wor
 		data: ExternalAddress null
 ]
 
-{ #category : #'instance creation' }
-GIOPipedProcess class >> spawn: command arguments: anArray workingDirectory: workingdirectory flags: flags [
-
-	^ self 
-		gSpawnAsyncWithPipes: workingdirectory
-		command: command 
-		arguments: anArray 
-		flags: flags 
-		childSetup: ExternalAddress null 
-		data: ExternalAddress null
-]
-
-{ #category : #'initialize-release' }
+{ #category : 'initialize-release' }
 GIOPipedProcess >> close [
 
 	super close.

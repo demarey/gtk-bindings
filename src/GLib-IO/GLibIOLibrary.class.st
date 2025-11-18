@@ -13,13 +13,13 @@ GLibIOLibrary >> gTypeFromName: aString [
 
 ]
 
-{ #category : 'accessing platform' }
+{ #category : 'accessing - platform' }
 GLibIOLibrary >> unix64LibraryName [
 
-	^ FFIUnix64LibraryFinder findLibrary: 'libgio-2.0.so'
+	^ FFIUnix64LibraryFinder findAnyLibrary: #('libgio-2.0.so' 'libgio-2.0.so.0')
 ]
 
-{ #category : 'accessing platform' }
+{ #category : 'accessing - platform' }
 GLibIOLibrary >> win32LibraryName [
 
 	^ FFIWindowsLibraryFinder findLibrary: 'libgio-2.0-0.dll'
