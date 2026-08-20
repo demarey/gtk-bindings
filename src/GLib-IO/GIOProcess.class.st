@@ -78,6 +78,23 @@ GIOProcess class >> gSpawnAsync: working_directory command: command arguments: a
 ]
 
 { #category : 'private' }
+GIOProcess class >> decodeExitCodeFromWaitStatus: waitStatusValue [
+	"On POSIX, the wait status packs the exit code into bits 8-15 (WEXITSTATUS),
+	 which is only valid when the process exited normally (WIFEXITED). On Windows
+	 the wait status already is the exit code."
+
+	| terminationStatus exitCode |
+
+	OSPlatform current isWindows ifTrue: [ ^ waitStatusValue ].
+
+	terminationStatus := waitStatusValue bitAnd: 16r7F.
+	terminationStatus isZero ifFalse: [ ^ nil ].
+
+	exitCode := (waitStatusValue bitShift: -8) bitAnd: 16rFF.
+	^ exitCode
+]
+
+{ #category : 'private' }
 GIOProcess class >> gSpawnCheckWaitStatus: waitStatus error: error [
 	" see https://docs.gtk.org/glib/func.spawn_check_wait_status.html
 	gboolean g_spawn_check_wait_status (gint wait_status, GError** error) "

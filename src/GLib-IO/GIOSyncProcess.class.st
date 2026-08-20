@@ -146,19 +146,8 @@ GIOSyncProcess >> setErrorIfAny: processInfo [
 
 { #category : 'private' }
 GIOSyncProcess >> decodedExitCodeFromWaitStatus: waitStatusValue [
-	"On POSIX, the wait status packs the exit code into bits 8-15 (WEXITSTATUS),
-	 which is only valid when the process exited normally (WIFEXITED). On Windows
-	 the wait status already is the exit code."
 
-	| terminationStatus exitCode |
-
-	OSPlatform current isWindows ifTrue: [ ^ waitStatusValue ].
-
-	terminationStatus := waitStatusValue bitAnd: 16r7F.
-	terminationStatus isZero ifFalse: [ ^ nil "killed by signal" ].
-
-	exitCode := (waitStatusValue bitShift: -8) bitAnd: 16rFF.
-	^ exitCode
+	^ GIOProcess decodeExitCodeFromWaitStatus: waitStatusValue
 ]
 
 { #category : 'private' }
