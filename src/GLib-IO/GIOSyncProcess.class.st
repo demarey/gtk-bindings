@@ -5,8 +5,8 @@ See https://docs.gtk.org/glib/func.spawn_sync.html
 Class {
 	#name : 'GIOSyncProcess',
 	#superclass : 'Object',
-	#traits : 'GLibIOTLibrary',
-	#classTraits : 'GLibIOTLibrary classTrait',
+	#traits : 'GLibTLibrary',
+	#classTraits : 'GLibTLibrary classTrait',
 	#instVars : [
 		'errorHolder',
 		'isSuccess',
