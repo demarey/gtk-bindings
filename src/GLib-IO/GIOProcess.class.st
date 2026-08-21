@@ -153,12 +153,6 @@ GIOProcess >> close [
 	self gSpawnClose
 ]
 
-{ #category : 'accessing' }
-GIOProcess >> forceTerminate [
-
-	LibC system: ('kill -9 {1}' format: { self pid })
-]
-
 { #category : 'private' }
 GIOProcess >> gChildWatchAdd: function [
 

@@ -6,8 +6,8 @@ https://developer-old.gnome.org/glib/stable/glib-IO-Channels.html
 Class {
 	#name : 'GIOChannel',
 	#superclass : 'GBaseObject',
-	#traits : 'GLibIOTLibrary',
-	#classTraits : 'GLibIOTLibrary classTrait',
+	#traits : 'GLibTLibrary',
+	#classTraits : 'GLibTLibrary classTrait',
 	#instVars : [
 		'callbacks'
 	],
