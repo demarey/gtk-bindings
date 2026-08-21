@@ -60,7 +60,7 @@ GIOSyncProcess >> basicgSpawnSync: working_directory command: command arguments:
 	^ processInfo
 		stdOut: standardOutput value readString;
 		stdErr: standardError value readString;
-		success: isSuccess;
+		isSpawnSuccess: isSuccess;
 		yourself
 ]
 
