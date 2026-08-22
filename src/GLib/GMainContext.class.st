@@ -8,7 +8,17 @@ Class {
 	#tag : 'Application'
 }
 
-{ #category : 'accessing' }
+	{ #category : 'instance creation' }
+GMainContext class >> new [
+
+	"Create a NEW dedicated GMainContext. Used to isolate a child watch (and its process
+	 handle) from the shared default context, mirroring how GIO's GSubprocess attaches its
+	 child watch to a private worker context."
+
+	^ self ffiCall: #(GMainContext* g_main_context_new (void))
+]
+
+	{ #category : 'accessing' }
 GMainContext class >> default [
 
 	^ self ffiCall: #(GMainContext* g_main_context_default (void))
