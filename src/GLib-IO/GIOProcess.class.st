@@ -8,7 +8,8 @@ Class {
 	#classTraits : 'GLibTLibrary classTrait',
 	#instVars : [
 		'pid',
-		'callbacks'
+		'callbacks',
+		'watchTag'
 	],
 	#pools : [
 		'GObjectTypes',
@@ -186,16 +187,75 @@ GIOProcess >> pid [
 
 { #category : 'accessing' }
 GIOProcess >> watch: aBlock [ 
+	"Add a child watch block which will be called when the child process exits,
+	 attached to the default GMainContext (see #watch:in:)."
+
+	^ self watch: aBlock in: GMainContext default
+]
+
+{ #category : 'accessing' }
+GIOProcess >> watch: aBlock in: aContext [
 	"Add a child watch block which will be called when the child process exits.
-	GLib supports only a single callback per process id.
-	If the process is spawned with other value than default, you may need to watch it to 
-	 properly close it (see g_spawn documentation and examples)."
-	| callback |
+	 GLib supports only a single callback per process id.
+	 The child watch source is ATTACHED to aContext, so the process handle is only ever
+	 polled there. Pass a dedicated private GMainContext to avoid racing with threads that
+	 iterate the shared default context (see GSubprocess, gio/gsubprocess.c). If the process
+	 is spawned with other value than default, you may need to watch it to properly close it
+	 (see g_spawn documentation and examples)."
+	| callback source |
 
 	callback := GCallback 
 		signature: #(void (GPid pidNum, gint wait_status, gpointer user_data)) 
 		block: [ :pidNum :status :data | aBlock value: status ]. 
 	callbacks ifNil: [ callbacks := Set new ].
 	callbacks add: callback.
-	self gChildWatchAdd: callback
+	source := self gChildWatchSourceNew.
+	self gSourceSetCallback: source function: callback.
+	watchTag := self gSourceAttach: source context: aContext.
+	self gSourceUnref: source
+]
+
+{ #category : 'accessing' }
+GIOProcess >> removeChildWatch [
+	"Detach the child watch source (if any) from its GMainContext so the process handle is
+	 no longer polled. Should be called before closing the pid on a premature #terminate;
+	 after a normal exit the source is destroyed automatically by the main context."
+
+	watchTag ifNil: [ ^ self ].
+	self gSourceRemove: watchTag.
+	watchTag := nil
+]
+
+{ #category : 'private' }
+GIOProcess >> gChildWatchSourceNew [
+
+	^ self ffiCall: #("GSource"void * g_child_watch_source_new ("GPid"int pid))
+]
+
+{ #category : 'private' }
+GIOProcess >> gSourceAttach: source context: context [
+
+	^ self ffiCall: #(guint g_source_attach ("GSource"void *source, GMainContext *context))
+]
+
+{ #category : 'private' }
+GIOProcess >> gSourceRemove: tag [
+
+	^ self ffiCall: #(gboolean g_source_remove (guint tag))
+]
+
+{ #category : 'private' }
+GIOProcess >> gSourceSetCallback: source function: function [
+
+	self ffiCall: #(void g_source_set_callback (
+		"GSource"void *source,
+		"GSourceFunc"gpointer function,
+		NULL,
+		NULL))
+]
+
+{ #category : 'private' }
+GIOProcess >> gSourceUnref: source [
+
+	self ffiCall: #(void g_source_unref ("GSource"void *source))
 ]
