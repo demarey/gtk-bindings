@@ -9,7 +9,7 @@ Class {
 	#instVars : [
 		'pid',
 		'callbacks',
-		'watchTag'
+		'watchSource'
 	],
 	#pools : [
 		'GObjectTypes',
@@ -206,30 +206,31 @@ GIOProcess >> watch: aBlock in: aContext [
 
 	callback := GCallback 
 		signature: #(void (GPid pidNum, gint wait_status, gpointer user_data)) 
-		block: [ :pidNum :status :data | 
-			"The child watch is a one-shot source destroyed by the context once it fires.
-			 Clear the tag before running the block so a racing #removeChildWatch (e.g. from
-			 #terminate) does not g_source_remove: a stale, already-destroyed source id,
-			 which would emit 'Source ID ... was not found'."
-			watchTag := nil.
-			aBlock value: status ]. 
+		block: [ :pidNum :status :data | aBlock value: status ]. 
 	callbacks ifNil: [ callbacks := Set new ].
 	callbacks add: callback.
 	source := self gChildWatchSourceNew.
 	self gSourceSetCallback: source function: callback.
-	watchTag := self gSourceAttach: source context: aContext.
-	self gSourceUnref: source
+	self gSourceAttach: source context: aContext.
+	"Keep our own reference on the GSource (in addition to the context's) so we can safely
+	 detach it later via #removeChildWatch using g_source_destroy + g_source_unref on the
+	 pointer, instead of a numeric source id which GLib may reuse/reset across engine
+	 restarts (g_source_remove: on a stale id emits 'Source ID ... was not found')."
+	watchSource := source
 ]
 
 { #category : 'accessing' }
 GIOProcess >> removeChildWatch [
 	"Detach the child watch source (if any) from its GMainContext so the process handle is
 	 no longer polled. Should be called before closing the pid on a premature #terminate;
-	 after a normal exit the source is destroyed automatically by the main context."
+	 after a normal exit the source is destroyed automatically by the main context.
+	 g_source_destroy is a safe no-op if the source already fired (one-shot), so this can be
+	 called from both the completion and terminate paths."
 
-	watchTag ifNil: [ ^ self ].
-	self gSourceRemove: watchTag.
-	watchTag := nil
+	watchSource ifNil: [ ^ self ].
+	self gSourceDestroy: watchSource.
+	self gSourceUnref: watchSource.
+	watchSource := nil
 ]
 
 { #category : 'private' }
@@ -245,9 +246,9 @@ GIOProcess >> gSourceAttach: source context: context [
 ]
 
 { #category : 'private' }
-GIOProcess >> gSourceRemove: tag [
+GIOProcess >> gSourceDestroy: source [
 
-	^ self ffiCall: #(gboolean g_source_remove (guint tag))
+	self ffiCall: #(void g_source_destroy ("GSource"void *source))
 ]
 
 { #category : 'private' }
