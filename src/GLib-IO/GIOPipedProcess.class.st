@@ -116,6 +116,21 @@ GIOPipedProcess >> inChannel [
 	^ inChannel ifNil: [ inChannel := self newChannel: inFd ]
 ]
 
+{ #category : 'private - pipes' }
+GIOPipedProcess >> closeInputWithDiagnostics [
+
+	"Temporary diagnostic path for the Windows stdin EOF investigation. Shuts the
+	 stdin channel down, then probes whether the underlying pipe write end was really
+	 closed by attempting one more write: if the fd is closed this raises an error
+	 (=> EOF is delivered and any hang is caused by the write end being held elsewhere),
+	 if it does NOT raise the fd is still open (=> our shutdown did not close it)."
+
+	| status probeSucceeded |
+	status := inChannel shutDown: true.
+	probeSucceeded := [ inChannel write: ' '. true ] on: Error do: [ false ].
+	('SP-WIN stdin shutdown status=', status, ' writeAfterClose=', probeSucceeded, ' windows=', (OSPlatform current isWindows)) crTrace
+]
+
 { #category : 'initialization' }
 GIOPipedProcess >> initializePid: pidNum in: stdinFd out: stdoutFd err: stderrFd [
 
