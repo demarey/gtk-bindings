@@ -41,6 +41,18 @@ GBytes class >> gBytesNewTake: data size: size [
 ]
 
 { #category : 'private' }
+GBytes class >> gBytesGetData: aBytes [
+
+	self ffiCall: #(gpointer g_bytes_get_data (GBytes *aBytes))
+]
+
+{ #category : 'private' }
+GBytes class >> gBytesGetSize: aBytes [
+
+	self ffiCall: #(gsize g_bytes_get_size (GBytes *aBytes))
+]
+
+{ #category : 'private' }
 GBytes class >> gBytesNewWithFreeFunc: data size: size freeFunc: free_func userData: user_data [
 
 	self ffiCall: #(GBytes* g_bytes_new_with_free_func (
@@ -95,6 +107,18 @@ GBytes class >> unref: handle [
 GBytes >> ref [
 
 	self ffiCall: #(GBytes* g_bytes_ref (self))
+]
+
+{ #category : 'accessing' }
+GBytes >> data [
+
+	^ self class gBytesGetData: self
+]
+
+{ #category : 'accessing' }
+GBytes >> size [
+
+	^ self class gBytesGetSize: self
 ]
 
 { #category : 'accessing' }

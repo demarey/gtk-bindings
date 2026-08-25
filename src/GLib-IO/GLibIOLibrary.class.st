@@ -14,9 +14,16 @@ GLibIOLibrary >> gTypeFromName: aString [
 ]
 
 { #category : 'accessing - platform' }
+GLibIOLibrary >> macLibraryName [
+
+	^ GMacLibraryFinder findLibrary: 'libgio-2.0.dylib'
+]
+
+{ #category : 'accessing - platform' }
 GLibIOLibrary >> unix64LibraryName [
 
-	^ FFIUnix64LibraryFinder findAnyLibrary: #('libgio-2.0.so' 'libgio-2.0.so.0')
+	^ FFIUnix64LibraryFinder findAnyLibrary:
+		#('libgio-2.0.so' 'libgio-2.0.so.0' 'libgio-2.0.dylib' 'libgio-2.0.0.dylib')
 ]
 
 { #category : 'accessing - platform' }
